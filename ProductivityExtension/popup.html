@@ -3,12 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Productivity Analyser</title>
+    <script src=background.js></script>
     <script src=popup.js></script>
 </head>
 
 <body>
-    <h1>Productivty App!</h1>
-    <button id="call-to-action">Open Tabs</button>
-    <h4 id="test-text">Open a group of tags. clickup.com, youtube.com, twitch.com</h4>
+    <header>
+        <h1>Grouper</h1>
+        <div id="utility-container">
+            <button id="new-group-button">New Group</button>
+            <button>New Website</button>
+        </div>
+    </header>
+
+    <main>
+        <h3>Your Groups</h3>
+        <div id="group-container">
+
+        </div>
+
+
+        <button id="call-to-action">Open Tabs</button>
+        <h1 id="output">OUTPUT</h1>
+    </main>
 </body>
 </html>

@@ -1,5 +1,5 @@
 {
-    "manifest_version": 3,
+    "manifest_version": 2,
 
     "name": "Productivity Plugin",
     "description": "This extension will help boost productivity",
@@ -17,7 +17,8 @@
     "permissions": [
         "activeTab",
         "tabs",
-        "tabGroups"
+        "tabGroups",
+        "storage"
     ]
 
 }

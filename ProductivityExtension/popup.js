@@ -1,11 +1,38 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
 
+    chrome.storage.sync.set({key: ["youtube.com", "facebook.com", "twitter.com"]}, function() {
+        console.log('Value is set to ');
+    });
+
+
+    let resultText = "";
+    chrome.storage.sync.get(['key'], function(result) {
+        console.log('Value currently is ' + result.key);
+            resultText = result.key;
+    });
+
+    const newFolderButton = document.getElementById("new-group-button");
+    newFolderButton.addEventListener('click', () => {
+        let entryField = document.createElement("div");
+        entryField.innerHTML = `
+            <input type="text" id="input" class="group-text-input">
+            <button class="save"> Save </button> 
+            <button class="cancel"> Cancel </button>
+        `;
+
+        document.getElementById("group-container").appendChild(entryField);
+
+        document.querySelector('.save').addEventListener('click', addGroup)
+        document.querySelector('.group-text-input').addEventListener('keyup', addGroup)
+        
+    });
+    
 
 
     const actionButton = document.getElementById("call-to-action");
     const text = document.getElementById("test-text");
-    actionButton.addEventListener('click', async () => {
 
+    actionButton.addEventListener('click', () => {
         let tabsToOpen = ["youtube.com", "facebook.com", "twitter.com"];
         
         chrome.tabs.create({ url: "http://" + tabsToOpen[0] + "/", active: false }, (firstTab) => {
@@ -14,22 +41,32 @@ document.addEventListener("DOMContentLoaded", async () => {
                     let newURL = "http://" + tabsToOpen[i] + "/";
                     chrome.tabs.create({ url: newURL, active: false }, (newTab) => {
                         console.log(groupId);
-                        chrome.tabs.group({ tabIds: newTab.id, groupId: groupId })
+                        chrome.tabs.group({ tabIds: newTab.id, groupId: groupId }, (groupId) => {
+                            chrome.tabGroups.update(groupId, { title: "Entertainment" });
+                        });
                         
                     });
-                }
+                };
+
+                
+
             });
             
         });
 
-        console.log(createdTabIds.pop());
-        console.log([1 , 2, 3]);
-
         
-        
-
-        text.textContent = "Opened Tabs!";
     })
 })
+
+
+function addGroup(e){
+    if(e.key === 'Enter' || !e.key){
+            let output = document.querySelector("#output");
+            output.textContent = document.querySelector(".group-text-input").value;
+            console.log("We made it here!");
+    }
+
+}
+
 
 
