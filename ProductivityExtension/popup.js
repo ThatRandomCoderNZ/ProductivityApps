@@ -33,17 +33,3 @@ document.addEventListener("DOMContentLoaded", async () => {
 })
 
 
-
-async function createTabs(tabsToOpen){
-    let createdTabIds = []
-    for (let i in tabsToOpen){
-        let newURL = "http://" + tabsToOpen[i] + "/";
-        chrome.tabs.create({ url: newURL, active: false }, (newTab) => {
-            createdTabIds.push(Number(newTab.id));
-            if (i == tabsToOpen.length - 1){
-                return createdTabIds;
-            }
-        });
-    }
-
-}

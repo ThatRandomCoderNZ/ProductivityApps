@@ -730,3 +730,4 @@ node_modules/typescript/loc/lcl/TRK/Targets/TypeScriptCompile.xaml.lcl
 node_modules/typescript/loc/lcl/TRK/Targets/TypeScriptProjectProperties.xaml.lcl
 node_modules/typescript/loc/lcl/TRK/TypeScriptDebugEngine/TypeScriptDebugEngine.dll.lcl
 node_modules/typescript/loc/lcl/TRK/TypeScriptLanguageService/Microsoft.CodeAnalysis.TypeScript.EditorFeatures.dll.lcl
+node_modules/typescript/loc/lcl/TRK/TypeScriptTasks/TypeScript.Tasks.dll.lcl
