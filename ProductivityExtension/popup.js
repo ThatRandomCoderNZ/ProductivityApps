@@ -30,29 +30,32 @@ document.addEventListener("DOMContentLoaded", () => {
             
     }});
     
-
+    let tabsToOpen = ["youtube.com", "facebook.com", "twitter.com"];
 
     const actionButton = document.getElementById("call-to-action");
     const text = document.getElementById("test-text");
 
     actionButton.addEventListener('click', () => {
-        let tabsToOpen = ["youtube.com", "facebook.com", "twitter.com"];
-        
-        chrome.tabs.create({ url: "http://" + tabsToOpen[0] + "/", active: false }, (firstTab) => {
-            chrome.tabs.group({ tabIds: firstTab.id }, (groupId) => {
-                for (let i = 1; i < tabsToOpen.length; i++){
-                    let newURL = "http://" + tabsToOpen[i] + "/";
-                    chrome.tabs.create({ url: newURL, active: false }, (newTab) => {
-                        console.log(groupId);
-                        chrome.tabs.group({ tabIds: newTab.id, groupId: groupId }, (groupId) => {
-                            chrome.tabGroups.update(groupId, { title: "Entertainment" });
-                        });
-                    });
-                };
-            });
-        });
+        createTabs(tabsToOpen);
     })
 })
+
+
+function createTabs(tabsToOpen){
+    chrome.tabs.create({ url: "http://" + tabsToOpen[0] + "/", active: false }, (firstTab) => {
+        chrome.tabs.group({ tabIds: firstTab.id }, (groupId) => {
+            for (let i = 1; i < tabsToOpen.length; i++){
+                let newURL = "http://" + tabsToOpen[i] + "/";
+                chrome.tabs.create({ url: newURL, active: false }, (newTab) => {
+                    console.log(groupId);
+                    chrome.tabs.group({ tabIds: newTab.id, groupId: groupId }, (groupId) => {
+                        chrome.tabGroups.update(groupId, { title: "Entertainment" });
+                    });
+                });
+            };
+        });
+    });
+}
 
 
 function addGroup(e){
