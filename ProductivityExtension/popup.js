@@ -13,19 +13,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const newFolderButton = document.getElementById("new-group-button");
     newFolderButton.addEventListener('click', () => {
-        let entryField = document.createElement("div");
-        entryField.innerHTML = `
-            <input type="text" id="input" class="group-text-input">
-            <button class="save"> Save </button> 
-            <button class="cancel"> Cancel </button>
-        `;
+        if(!document.querySelector("#group-entry-field")){
+            let entryField = document.createElement("div");
+            entryField.id = "group-entry-field";
+            entryField.innerHTML = `
+                <input type="text" id="input" class="group-text-input">
+                <button class="save"> Save </button> 
+                <button class="cancel"> Cancel </button>
+            `;
 
-        document.getElementById("group-container").appendChild(entryField);
+            document.getElementById("group-container").appendChild(entryField);
 
-        document.querySelector('.save').addEventListener('click', addGroup)
-        document.querySelector('.group-text-input').addEventListener('keyup', addGroup)
-        
-    });
+            document.querySelector('.save').addEventListener('click', addGroup)
+            document.querySelector('.cancel').addEventListener('click', cancelGroup)
+            document.querySelector('.group-text-input').addEventListener('keyup', addGroup)
+            
+    }});
     
 
 
@@ -44,17 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         chrome.tabs.group({ tabIds: newTab.id, groupId: groupId }, (groupId) => {
                             chrome.tabGroups.update(groupId, { title: "Entertainment" });
                         });
-                        
                     });
                 };
-
-                
-
             });
-            
         });
-
-        
     })
 })
 
@@ -68,5 +64,7 @@ function addGroup(e){
 
 }
 
-
+function cancelGroup(){
+    document.querySelector("#group-container").removeChild(document.querySelector("#group-entry-field"));
+}
 
