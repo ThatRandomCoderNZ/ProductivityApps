@@ -1,5 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
+    main();
+})
 
+
+function main(){
     chrome.storage.sync.set({key: ["youtube.com", "facebook.com", "twitter.com"]}, function() {
         console.log('Value is set to ');
     });
@@ -38,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     actionButton.addEventListener('click', () => {
         createTabs(tabsToOpen);
     })
-})
+}
 
 
 function createTabs(tabsToOpen){
