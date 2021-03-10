@@ -1,5 +1,5 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
 
     "name": "Productivity Plugin",
     "description": "This extension will help boost productivity",
@@ -10,9 +10,14 @@
         "default_popup": "popup.html"
     },
 
+    "background":{
+        "service worker": "background.js"
+    },
+
     "permissions": [
         "activeTab",
-        "tabs"
+        "tabs",
+        "tabGroups"
     ]
 
 }
