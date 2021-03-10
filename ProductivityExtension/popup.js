@@ -2,12 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
     main();
 })
 
-
 function main(){
     chrome.storage.sync.set({key: ["youtube.com", "facebook.com", "twitter.com"]}, function() {
         console.log('Value is set to ');
     });
-
 
     let resultText = "";
     chrome.storage.sync.get(['key'], function(result) {
@@ -18,24 +16,11 @@ function main(){
     const newFolderButton = document.getElementById("new-group-button");
     newFolderButton.addEventListener('click', () => {
         if(!document.querySelector("#group-entry-field")){
-            let entryField = document.createElement("div");
-            entryField.id = "group-entry-field";
-            entryField.innerHTML = `
-                <input type="text" id="input" class="group-text-input">
-                <button class="save"> Save </button> 
-                <button class="cancel"> Cancel </button>
-            `;
-
-            document.getElementById("group-container").appendChild(entryField);
-
-            document.querySelector('.save').addEventListener('click', addGroup)
-            document.querySelector('.cancel').addEventListener('click', cancelGroup)
-            document.querySelector('.group-text-input').addEventListener('keyup', addGroup)
-            
+            createEntryField();
     }});
     
-    let tabsToOpen = ["youtube.com", "facebook.com", "twitter.com"];
 
+    let tabsToOpen = ["youtube.com", "facebook.com", "twitter.com"];
     const actionButton = document.getElementById("call-to-action");
     const text = document.getElementById("test-text");
 
@@ -59,6 +44,22 @@ function createTabs(tabsToOpen){
             };
         });
     });
+}
+
+
+function createEntryField(){
+    let entryField = document.createElement("div");
+    entryField.id = "group-entry-field";
+    entryField.innerHTML = `
+        <input type="text" id="input" class="group-text-input">
+        <button class="save"> Save </button> 
+        <button class="cancel"> Cancel </button>
+    `;
+    document.getElementById("group-container").appendChild(entryField);
+
+    document.querySelector('.save').addEventListener('click', addGroup)
+    document.querySelector('.cancel').addEventListener('click', cancelGroup)
+    document.querySelector('.group-text-input').addEventListener('keyup', addGroup)
 }
 
 
