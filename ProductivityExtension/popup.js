@@ -2,16 +2,46 @@ document.addEventListener("DOMContentLoaded", () => {
     main();
 })
 
-function main(){
-    chrome.storage.sync.set({key: ["youtube.com", "facebook.com", "twitter.com"]}, function() {
-        console.log('Value is set to ');
-    });
+function setData(data){
+    chrome.storage.sync.set(data, () => {
+        console.log("Set " + data);
+    })
+    
+}
 
-    let resultText = "";
-    chrome.storage.sync.get(['key'], function(result) {
-        console.log('Value currently is ' + result.key);
-            resultText = result.key;
-    });
+function updateGroups(keyName, groupName){
+    chrome.storage.sync.get(keyName, (result) => {
+        console.log(result.myGroups);
+        data = result[keyName];
+        data.push(groupName);
+        console.log(result.myGroups);
+        let dataObj = {}
+        dataObj[keyName] = data;
+        chrome.storage.sync.set( dataObj , () => {
+            console.log("Set values: " + dataObj);
+            createGroupLabel(groupName)
+        })
+    })
+}
+
+function getData(keyName){
+    var resultData = { }
+    chrome.storage.sync.get(keyName, (result) => {
+        resultData[keyName] = result;
+        populateGroups(result);
+    })
+    
+}
+
+function resetStorage(){
+    chrome.storage.sync.clear(() => {});
+}
+
+function main(){
+    getData("myGroups");
+    setData({myGroups: ["something-1", "something-2"]});
+
+
 
     const newFolderButton = document.getElementById("new-group-button");
     newFolderButton.addEventListener('click', () => {
@@ -46,6 +76,27 @@ function createTabs(tabsToOpen){
     });
 }
 
+function createGroupLabel(name){
+    let parentNode = document.getElementById("group-container")
+    let id = parentNode.childElementCount + 1;
+    let groupLabel = document.createElement("div");
+    groupLabel.id = "group-label-" + id;
+    groupLabel.innerHTML = `
+    <p> ${name} </p>
+    `;
+
+    document.getElementById("group-container").appendChild(groupLabel);
+}
+
+async function populateGroups(groupData){
+    console.log(JSON.stringify(groupData));
+    var groupNames = groupData.myGroups;
+    for(let i = 0; i < groupNames.length; i++){
+        createGroupLabel(groupNames[i]);
+    }
+
+}
+
 
 function createEntryField(){
     let entryField = document.createElement("div");
@@ -65,9 +116,12 @@ function createEntryField(){
 
 function addGroup(e){
     if(e.key === 'Enter' || !e.key){
-            let output = document.querySelector("#output");
-            output.textContent = document.querySelector(".group-text-input").value;
-            console.log("We made it here!");
+        let groupName = document.querySelector(".group-text-input").value;
+        let output = document.querySelector("#output");
+        output.textContent = groupName;
+        updateGroups("myGroups", groupName);
+        console.log("We made it here!");
+
     }
 
 }
