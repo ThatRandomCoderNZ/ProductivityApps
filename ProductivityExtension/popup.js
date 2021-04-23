@@ -85,7 +85,23 @@ function createGroupLabel(name){
     <p> ${name} </p>
     `;
 
-    document.getElementById("group-container").appendChild(groupLabel);
+    let children = parentNode.children;
+    let lastGroupNode = 0;
+    for(let i = 0; i < children.length; i++){
+        let childId = children[i].id;
+        if(childId.match(/group-label/)){
+            lastGroupNode = i;
+        }
+    }
+
+    if(children.length > 0){
+        lastGroupNode++;
+    }
+
+
+
+
+    parentNode.insertBefore(groupLabel, children[lastGroupNode]);
 }
 
 async function populateGroups(groupData){
@@ -117,6 +133,7 @@ function createEntryField(){
 function addGroup(e){
     if(e.key === 'Enter' || !e.key){
         let groupName = document.querySelector(".group-text-input").value;
+        document.querySelector(".group-text-input").value = "";
         let output = document.querySelector("#output");
         output.textContent = groupName;
         updateGroups("myGroups", groupName);
