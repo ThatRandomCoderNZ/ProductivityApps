@@ -24,6 +24,22 @@ function updateGroups(keyName, groupName){
     })
 }
 
+function removeGroup(keyName, groupName){
+    chrome.storage.sync.get(keyName, (result) => {
+
+        data = result[keyName];
+        groupIndex = data.indexOf(groupName)
+        data.splice(groupIndex, 1)
+
+        let dataObj = {}
+        dataObj[keyName] = data;
+        chrome.storage.sync.set( dataObj , () => {
+            console.log("Set values: " + dataObj);
+        })
+    })
+}
+
+
 function getData(keyName){
     var resultData = { }
     chrome.storage.sync.get(keyName, (result) => {
@@ -39,9 +55,6 @@ function resetStorage(){
 
 function main(){
     getData("myGroups");
-    setData({myGroups: ["something-1", "something-2"]});
-
-
 
     const newFolderButton = document.getElementById("new-group-button");
     newFolderButton.addEventListener('click', () => {
@@ -82,8 +95,22 @@ function createGroupLabel(name){
     let groupLabel = document.createElement("div");
     groupLabel.id = "group-label-" + id;
     groupLabel.innerHTML = `
-    <p> ${name} </p>
+    <div style="display: block;">
+        <button class="group-button"> ${name} </button>
+        <button class="clearButton"> clear </button>
+    </div>
     `;
+
+    groupLabel.querySelector(".group-button").addEventListener('click', () => {
+        handleGroupDetails(name, id)
+    })
+
+    groupLabel.querySelector(".clearButton").addEventListener('click', () => {
+        parentNode.removeChild(groupLabel);
+        removeGroup("myGroups", name)
+    })
+
+
 
     let children = parentNode.children;
     let lastGroupNode = 0;
@@ -98,10 +125,81 @@ function createGroupLabel(name){
         lastGroupNode++;
     }
 
-
-
-
     parentNode.insertBefore(groupLabel, children[lastGroupNode]);
+}
+
+function handleGroupDetails(groupName, groupId){
+    const focusThreshold = 1
+
+    groupNode = document.querySelector("#group-label-" + groupId);
+    groupElemChildren = groupNode.children;
+
+    if(groupElemChildren.length > focusThreshold){
+        hideGroupDetails(groupName, groupId);
+    }else{
+        showGroupDetails(groupName, groupId);
+    }
+}
+
+function hideGroupDetails(groupName, groupId){
+    let groupNode = document.querySelector("#group-label-" + groupId);
+    console.log(groupNode.children)
+    let details = groupNode.querySelector("#website-details-" + groupId);
+    groupNode.removeChild(details);
+}
+
+function addWebsite(groupName, node){
+   
+}
+
+function showGroupDetails(groupName, groupId){
+    groupNode = document.querySelector("#group-label-" + groupId);
+
+    websiteNode = document.createElement("div");
+    websiteNode.id = "website-details-" + groupId;
+    websiteNode.class = "website-details";
+
+    chrome.storage.sync.get(groupName, (result) => {
+        resultData[keyName] = result;
+        for(let i = 0; i < resultData.length; i++){
+            websiteLabel = document.createElement("div");
+            websiteLabel.class = "website-label";
+            websiteLabel.id = "website-group-" + groupId + "-label-" + i
+            websiteLabel.innerHTML = `
+            <p>${resultData[i]}</p>
+            `;
+            websiteNode.appendChild(websiteLabel);
+        }
+    })
+
+    let entryField = document.createElement("div");
+    entryField.id = "website-entry-" + groupId;
+    entryField.innerHTML = `
+        <input type="text" id="input-${groupId}" class="website-text-input">
+        <button class="save"> Save </button> 
+        <button class="cancel"> Cancel </button>
+    `;
+    websiteNode.appendChild(entryField);
+
+    entryField.querySelector('.save').addEventListener('click', () => {
+        let websiteEntryField = document.querySelector("#input-" + groupId).value;
+        addWebsite(groupName, websiteEntryField.value)
+    });
+
+    entryField.querySelector('.cancel').addEventListener('click', () => {
+        hideGroupDetails(groupName, groupId);
+    })
+    entryField.querySelector('#input-' + groupId).addEventListener('keyup', () => {
+        let websiteEntryField = document.querySelector("#input-" + groupId).value;
+        addWebsite(groupName, websiteEntryField.value)
+    })
+
+    groupNode.appendChild(websiteNode)
+
+
+
+
+
 }
 
 async function populateGroups(groupData){
@@ -138,12 +236,12 @@ function addGroup(e){
         output.textContent = groupName;
         updateGroups("myGroups", groupName);
         console.log("We made it here!");
-
+        
     }
-
 }
 
 function cancelGroup(){
     document.querySelector("#group-container").removeChild(document.querySelector("#group-entry-field"));
 }
+
 
