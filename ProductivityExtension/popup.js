@@ -30,7 +30,6 @@ function updateGroups(keyName, groupName){
 
 function removeGroup(keyName, groupName){
     chrome.storage.sync.get(keyName, (result) => {
-
         data = result[keyName];
         groupIndex = data.indexOf(groupName)
         data.splice(groupIndex, 1)
@@ -41,6 +40,7 @@ function removeGroup(keyName, groupName){
             console.log("Set values: " + dataObj);
         })
     })
+    chrome.storage.sync.remove(groupName);
 }
 
 
