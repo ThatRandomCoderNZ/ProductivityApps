@@ -13,7 +13,11 @@ function updateGroups(keyName, groupName){
     chrome.storage.sync.get(keyName, (result) => {
         console.log(result.myGroups);
         data = result[keyName];
-        data.push(groupName);
+        if(data != null){
+            data.push(groupName);
+        }else{
+            data = [groupName]
+        }
         console.log(result.myGroups);
         let dataObj = {}
         dataObj[keyName] = data;
@@ -51,6 +55,11 @@ function getData(keyName){
 
 function resetStorage(){
     chrome.storage.sync.clear(() => {});
+    let dataObj = {}
+    dataObj["myGroups"] = [];
+    chrome.storage.sync.set( dataObj , () => {
+        console.log("Set values: " + dataObj);
+    })
 }
 
 function main(){
@@ -148,8 +157,28 @@ function hideGroupDetails(groupName, groupId){
     groupNode.removeChild(details);
 }
 
-function addWebsite(groupName, node){
-   
+function addWebsite(keyName, website, groupId){
+    console.log("This was the website name received: " + website);
+    chrome.storage.sync.get(keyName, (result) => {
+        console.log(result.myGroups);
+        let data = result[keyName];
+        if(data != null){
+            console.log("it wasn't null")
+            data.push(website);
+        }else{
+            console.log("First website entry");
+            data = [website]
+        }
+        
+        console.log(result.myGroups);
+        let dataObj = {}
+        dataObj[keyName] = data;
+        chrome.storage.sync.set( dataObj , () => {
+            console.log("Set values: " + dataObj);
+            hideGroupDetails(keyName, groupId)
+            showGroupDetails(keyName, groupId)
+        })
+    })
 }
 
 function showGroupDetails(groupName, groupId){
@@ -158,19 +187,6 @@ function showGroupDetails(groupName, groupId){
     websiteNode = document.createElement("div");
     websiteNode.id = "website-details-" + groupId;
     websiteNode.class = "website-details";
-
-    chrome.storage.sync.get(groupName, (result) => {
-        resultData[keyName] = result;
-        for(let i = 0; i < resultData.length; i++){
-            websiteLabel = document.createElement("div");
-            websiteLabel.class = "website-label";
-            websiteLabel.id = "website-group-" + groupId + "-label-" + i
-            websiteLabel.innerHTML = `
-            <p>${resultData[i]}</p>
-            `;
-            websiteNode.appendChild(websiteLabel);
-        }
-    })
 
     let entryField = document.createElement("div");
     entryField.id = "website-entry-" + groupId;
@@ -181,17 +197,35 @@ function showGroupDetails(groupName, groupId){
     `;
     websiteNode.appendChild(entryField);
 
+    chrome.storage.sync.get(groupName, (result) => {
+        var groupNames = result[groupName];
+
+        for(let i = 0; i < groupNames.length; i++){
+            websiteLabel = document.createElement("div");
+            websiteLabel.class = "website-label";
+            websiteLabel.id = "website-group-" + groupId + "-label-" + i
+            websiteLabel.innerHTML = `
+            <p>${groupNames[i]}</p>
+            `;
+            websiteNode.insertBefore(websiteLabel, entryField);
+        }
+    })
+
+
+
     entryField.querySelector('.save').addEventListener('click', () => {
-        let websiteEntryField = document.querySelector("#input-" + groupId).value;
-        addWebsite(groupName, websiteEntryField.value)
+        let websiteEntryField = document.querySelector("#input-" + groupId);
+        addWebsite(groupName, websiteEntryField.value, groupId)
     });
 
     entryField.querySelector('.cancel').addEventListener('click', () => {
         hideGroupDetails(groupName, groupId);
     })
-    entryField.querySelector('#input-' + groupId).addEventListener('keyup', () => {
-        let websiteEntryField = document.querySelector("#input-" + groupId).value;
-        addWebsite(groupName, websiteEntryField.value)
+    entryField.querySelector('#input-' + groupId).addEventListener('keyup', (e) => {
+        if(e.key == "Enter"){
+            let websiteEntryField = document.querySelector("#input-" + groupId);
+            addWebsite(groupName, websiteEntryField.value, groupId)
+        }
     })
 
     groupNode.appendChild(websiteNode)
