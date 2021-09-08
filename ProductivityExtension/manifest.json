@@ -1,17 +1,17 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
 
     "name": "Productivity Plugin",
     "description": "This extension will help boost productivity",
     "version": "1.0",
 
-    "browser_action": {
+    "action": {
         "default_icon": "icon.png",
         "default_popup": "popup.html"
     },
 
-    "background":{
-        "service worker": "background.js"
+    "background": {
+        "service_worker": "background.js"
     },
 
     "permissions": [
