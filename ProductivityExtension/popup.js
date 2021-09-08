@@ -1,281 +1,67 @@
 document.addEventListener("DOMContentLoaded", () => {
     main();
-})
+});
 
-function setData(data){
-    chrome.storage.sync.set(data, () => {
-        console.log("Set " + data);
-    })
-    
+function cleanURL(url){
+    domain = url.split("//")[1];
+    if(domain.includes("www.")){
+        domain = domain.split("www.")[1];
+    }
+    return domain;
 }
 
-function updateGroups(keyName, groupName){
-    chrome.storage.sync.get(keyName, (result) => {
-        console.log(result.myGroups);
-        data = result[keyName];
-        if(data != null){
-            data.push(groupName);
+function toggleAccordian(container){
+    console.log("Its toggle time baby");
+        element = container.querySelector(".tab-container");
+        if(element.classList.contains("closed")){
+            element.classList.remove("closed");
+            element.classList.add("open");
         }else{
-            data = [groupName]
+            element.classList.remove("open");
+            element.classList.add("closed");
         }
-        console.log(result.myGroups);
-        let dataObj = {}
-        dataObj[keyName] = data;
-        chrome.storage.sync.set( dataObj , () => {
-            console.log("Set values: " + dataObj);
-            createGroupLabel(groupName)
-        })
-    })
-}
 
-function removeGroup(keyName, groupName){
-    chrome.storage.sync.get(keyName, (result) => {
-        data = result[keyName];
-        groupIndex = data.indexOf(groupName)
-        data.splice(groupIndex, 1)
-
-        let dataObj = {}
-        dataObj[keyName] = data;
-        chrome.storage.sync.set( dataObj , () => {
-            console.log("Set values: " + dataObj);
-        })
-    })
-    chrome.storage.sync.remove(groupName);
-}
-
-
-function getData(keyName){
-    var resultData = { }
-    chrome.storage.sync.get(keyName, (result) => {
-        resultData[keyName] = result;
-        populateGroups(result);
-    })
-    
-}
-
-function resetStorage(){
-    chrome.storage.sync.clear(() => {});
-    let dataObj = {}
-    dataObj["myGroups"] = [];
-    chrome.storage.sync.set( dataObj , () => {
-        console.log("Set values: " + dataObj);
-    })
 }
 
 function main(){
-    getData("myGroups");
+    document.querySelector("#reset-button").addEventListener('click', () => {
+        console.log("Clicked");
+        chrome.storage.sync.clear();
+    });
 
-    const newFolderButton = document.getElementById("new-group-button");
-    newFolderButton.addEventListener('click', () => {
-        if(!document.querySelector("#group-entry-field")){
-            createEntryField();
-    }});
-    
+    groupDiv = document.querySelector("#group-container");
 
-    let tabsToOpen = ["youtube.com", "facebook.com", "twitter.com"];
-    const actionButton = document.getElementById("call-to-action");
-    const text = document.getElementById("test-text");
+    chrome.storage.sync.get(null, (result) => {
+        for(var obj in result){
+            if(obj != "allTabs"){
+                let group = document.createElement("div");
+                group.class = "group-div";
+                group.id = "group-" + obj;
+                
+                innerElements = `
+                <p>${result[obj].title}</p>
+                <button class="show">Show/Hide</button>
+                <button class="cancel"> Delete </button>
+                <div class="tab-container closed">
+                <ul>`;
+                
+                tabs = result[obj].tabs;
+                for(tab in tabs){
+                    innerElements +=`<li>
+                                        <div class="tab-logo-container"></div>
+                                        <p>${cleanURL(tabs[tab])}</p>
+                                     </li>`;
+                }
 
-    actionButton.addEventListener('click', () => {
-        createTabs(tabsToOpen);
-    })
-}
+                innerElements += "</ul></div>"
+                group.innerHTML = innerElements;
 
+                groupDiv.appendChild(group);
 
-function createTabs(tabsToOpen){
-    chrome.tabs.create({ url: "http://" + tabsToOpen[0] + "/", active: false }, (firstTab) => {
-        chrome.tabs.group({ tabIds: firstTab.id }, (groupId) => {
-            for (let i = 1; i < tabsToOpen.length; i++){
-                let newURL = "http://" + tabsToOpen[i] + "/";
-                chrome.tabs.create({ url: newURL, active: false }, (newTab) => {
-                    console.log(groupId);
-                    chrome.tabs.group({ tabIds: newTab.id, groupId: groupId }, (groupId) => {
-                        chrome.tabGroups.update(groupId, { title: "Entertainment" });
-                    });
+                group.querySelector(".show").addEventListener('click', (e) => {
+                    toggleAccordian(group);
                 });
-            };
-        });
-    });
-}
-
-function createGroupLabel(name){
-    let parentNode = document.getElementById("group-container")
-    let id = parentNode.childElementCount + 1;
-    let groupLabel = document.createElement("div");
-    groupLabel.id = "group-label-" + id;
-    groupLabel.innerHTML = `
-    <div style="display: block;">
-        <button class="group-button"> ${name} </button>
-        <button class="clearButton"> clear </button>
-    </div>
-    `;
-
-    groupLabel.querySelector(".group-button").addEventListener('click', () => {
-        handleGroupDetails(name, id)
-    })
-
-    groupLabel.querySelector(".clearButton").addEventListener('click', () => {
-        parentNode.removeChild(groupLabel);
-        removeGroup("myGroups", name)
-    })
-
-
-
-    let children = parentNode.children;
-    let lastGroupNode = 0;
-    for(let i = 0; i < children.length; i++){
-        let childId = children[i].id;
-        if(childId.match(/group-label/)){
-            lastGroupNode = i;
-        }
-    }
-
-    if(children.length > 0){
-        lastGroupNode++;
-    }
-
-    parentNode.insertBefore(groupLabel, children[lastGroupNode]);
-}
-
-function handleGroupDetails(groupName, groupId){
-    const focusThreshold = 1
-
-    groupNode = document.querySelector("#group-label-" + groupId);
-    groupElemChildren = groupNode.children;
-
-    if(groupElemChildren.length > focusThreshold){
-        hideGroupDetails(groupName, groupId);
-    }else{
-        showGroupDetails(groupName, groupId);
-    }
-}
-
-function hideGroupDetails(groupName, groupId){
-    let groupNode = document.querySelector("#group-label-" + groupId);
-    console.log(groupNode.children)
-    let details = groupNode.querySelector("#website-details-" + groupId);
-    groupNode.removeChild(details);
-}
-
-function addWebsite(keyName, website, groupId){
-    console.log("This was the website name received: " + website);
-    chrome.storage.sync.get(keyName, (result) => {
-        console.log(result.myGroups);
-        let data = result[keyName];
-        if(data != null){
-            console.log("it wasn't null")
-            data.push(website);
-        }else{
-            console.log("First website entry");
-            data = [website]
-        }
-        
-        console.log(result.myGroups);
-        let dataObj = {}
-        dataObj[keyName] = data;
-        chrome.storage.sync.set( dataObj , () => {
-            console.log("Set values: " + dataObj);
-            hideGroupDetails(keyName, groupId)
-            showGroupDetails(keyName, groupId)
-        })
-    })
-}
-
-function showGroupDetails(groupName, groupId){
-    groupNode = document.querySelector("#group-label-" + groupId);
-
-    websiteNode = document.createElement("div");
-    websiteNode.id = "website-details-" + groupId;
-    websiteNode.class = "website-details";
-
-    let entryField = document.createElement("div");
-    entryField.id = "website-entry-" + groupId;
-    entryField.innerHTML = `
-        <input type="text" id="input-${groupId}" class="website-text-input">
-        <button class="save"> Save </button> 
-        <button class="cancel"> Cancel </button>
-    `;
-    websiteNode.appendChild(entryField);
-
-    chrome.storage.sync.get(groupName, (result) => {
-        var groupNames = result[groupName];
-
-        for(let i = 0; i < groupNames.length; i++){
-            websiteLabel = document.createElement("div");
-            websiteLabel.class = "website-label";
-            websiteLabel.id = "website-group-" + groupId + "-label-" + i
-            websiteLabel.innerHTML = `
-            <p>${groupNames[i]}</p>
-            `;
-            websiteNode.insertBefore(websiteLabel, entryField);
+            }
         }
     })
-
-
-
-    entryField.querySelector('.save').addEventListener('click', () => {
-        let websiteEntryField = document.querySelector("#input-" + groupId);
-        addWebsite(groupName, websiteEntryField.value, groupId)
-    });
-
-    entryField.querySelector('.cancel').addEventListener('click', () => {
-        hideGroupDetails(groupName, groupId);
-    })
-    entryField.querySelector('#input-' + groupId).addEventListener('keyup', (e) => {
-        if(e.key == "Enter"){
-            let websiteEntryField = document.querySelector("#input-" + groupId);
-            addWebsite(groupName, websiteEntryField.value, groupId)
-        }
-    })
-
-    groupNode.appendChild(websiteNode)
-
-
-
-
-
 }
-
-async function populateGroups(groupData){
-    console.log(JSON.stringify(groupData));
-    var groupNames = groupData.myGroups;
-    for(let i = 0; i < groupNames.length; i++){
-        createGroupLabel(groupNames[i]);
-    }
-
-}
-
-
-function createEntryField(){
-    let entryField = document.createElement("div");
-    entryField.id = "group-entry-field";
-    entryField.innerHTML = `
-        <input type="text" id="input" class="group-text-input">
-        <button class="save"> Save </button> 
-        <button class="cancel"> Cancel </button>
-    `;
-    document.getElementById("group-container").appendChild(entryField);
-
-    document.querySelector('.save').addEventListener('click', addGroup)
-    document.querySelector('.cancel').addEventListener('click', cancelGroup)
-    document.querySelector('.group-text-input').addEventListener('keyup', addGroup)
-}
-
-
-function addGroup(e){
-    if(e.key === 'Enter' || !e.key){
-        let groupName = document.querySelector(".group-text-input").value;
-        document.querySelector(".group-text-input").value = "";
-        let output = document.querySelector("#output");
-        output.textContent = groupName;
-        updateGroups("myGroups", groupName);
-        console.log("We made it here!");
-        
-    }
-}
-
-function cancelGroup(){
-    document.querySelector("#group-container").removeChild(document.querySelector("#group-entry-field"));
-}
-
-
