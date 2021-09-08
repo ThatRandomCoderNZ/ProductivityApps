@@ -1,0 +1,14 @@
+body{
+    position: -webkit-sticky;
+    position: sticky;
+    right: 0;
+    width: 20em;
+}
+
+.open{
+    display:block;
+}
+
+.closed{
+    display:none;
+}
