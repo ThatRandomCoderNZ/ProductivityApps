@@ -12,3 +12,28 @@ body{
 .closed{
     display:none;
 }
+
+
+.group-header{
+    position: relative;
+    display:flex;
+    justify-content:space-evenly;
+    top: -25px;
+}
+
+
+
+.invis-button{
+    background-color: transparent;
+    border: none;
+}
+
+button:hover{
+    cursor: pointer;
+}
+
+
+
+.button-image{
+    width: 20px;
+}
